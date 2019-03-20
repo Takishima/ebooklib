@@ -450,6 +450,35 @@ class EpubHtml(EpubItem):
         return '<EpubHtml:%s:%s>' % (self.id, self.file_name)
 
 
+class EpubLiteralXHtml(EpubHtml):
+    
+    """
+    Represents a literal XHTML page (ie. content is taken as is without template).
+    """
+    
+    def __init__(self, uid=None, file_name='', media_type='', content=None, title='',
+                 lang=None, direction=None, media_overlay=None, media_duration=None):
+        super(EpubLiteralXHtml, self).__init__(uid, file_name, media_type, content,
+                                               title, lang, direction, media_overlay,
+                                               media_duration)        
+
+    def get_content(self, default=None):
+        """
+        Returns content for this document as HTML string. Content will be of type 'str' (Python 2)
+        or 'bytes' (Python 3).
+
+        :Args:
+          - default: Default value for the content if it is not defined.
+
+        :Returns:
+          Returns content of this document.
+        """
+
+        return self.content
+
+    def __str__(self):
+        return '<EpubLiteralXHtml:%s:%s>' % (self.id, self.file_name)
+    
 class EpubCoverHtml(EpubHtml):
 
     """
