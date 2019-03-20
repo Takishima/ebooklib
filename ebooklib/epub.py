@@ -70,7 +70,7 @@ COVER_XML = six.b('''<?xml version="1.0" encoding="UTF-8"?>
  <head>
   <style>
     body { margin: 0em; padding: 0em; }
-    img { max-width: 100%; max-height: 100%; }
+    img { height: auto; max-height: 100%; max-width: 100%; width: auto; }
   </style>
  </head>
  <body>
