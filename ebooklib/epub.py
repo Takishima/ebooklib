@@ -68,13 +68,13 @@ COVER_XML = six.b('''<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en" xml:lang="en">
  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <style>
-    body { margin: 0em; padding: 0em; }
+    body { display: block; margin: 0em; padding: 0em; }
     img { height: auto; max-height: 100%; max-width: 100%; width: auto; }
   </style>
  </head>
  <body>
-   <img src="" alt="" />
  </body>
 </html>''')
 
@@ -418,12 +418,12 @@ class EpubHtml(EpubItem):
                 _lnk = etree.SubElement(_head, 'link', lnk, nsmap=tree_root.nsmap)
 
         # this should not be like this
-        # head = html_root.find('head')
-        # if head is not None:
-        #     for i in head.getchildren():
-        #         if i.tag == 'title' and self.title != '':
-        #             continue
-        #         _head.append(i)
+        head = html_root.find('head')
+        if head is not None:
+            for i in head.getchildren():
+                if i.tag == 'title':
+                    continue
+                _head.append(i)
 
         # create and populate body
 
@@ -482,7 +482,7 @@ class EpubCoverHtml(EpubHtml):
           Returns content of this document.
         """
 
-        self.content = self.book.get_template('cover')
+        self.content = '<body><img src="" alt="" /></body>'
 
         tree = parse_string(super(EpubCoverHtml, self).get_content())
         tree_root = tree.getroot()
