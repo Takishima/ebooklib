@@ -399,19 +399,23 @@ class EpubHtml(EpubItem):
 
         # create and populate head
 
-        _head = etree.SubElement(tree_root, 'head')
+        _head = tree_root.find('head', namespaces=tree_root.nsmap)
+        if _head is None:
+            _head = etree.SubElement(tree_root, 'head', nsmap=tree_root.nsmap)
 
         if self.title != '':
-            _title = etree.SubElement(_head, 'title')
+            _title = tree_root.find('title', namespaces=tree_root.nsmap)
+            if _title is None:
+                _title = etree.SubElement(_head, 'title', nsmap=tree_root.nsmap)
             _title.text = self.title
 
         for lnk in self.links:
             if lnk.get('type') == 'text/javascript':
-                _lnk = etree.SubElement(_head, 'script', lnk)
+                _lnk = etree.SubElement(_head, 'script', lnk, nsmap=tree_root.nsmap)
                 # force <script></script>
                 _lnk.text = ''
             else:
-                _lnk = etree.SubElement(_head, 'link', lnk)
+                _lnk = etree.SubElement(_head, 'link', lnk, nsmap=tree_root.nsmap)
 
         # this should not be like this
         # head = html_root.find('head')
@@ -423,7 +427,12 @@ class EpubHtml(EpubItem):
 
         # create and populate body
 
-        _body = etree.SubElement(tree_root, 'body')
+        _body = tree_root.find('body', namespaces=tree_root.nsmap)
+        if _body is not None:
+            _body.clear()
+        else:
+            _body = etree.SubElement(tree_root, 'body', nsmap=tree_root.nsmap)
+
         if self.direction:
             _body.set('dir', self.direction)
             tree_root.set('dir', self.direction)
@@ -446,6 +455,8 @@ class EpubCoverHtml(EpubHtml):
     """
     Represents Cover page in the EPUB file.
     """
+
+    _template_name = 'cover'
 
     def __init__(self, uid='cover', file_name='cover.xhtml', image_name='', title='Cover'):
         super(EpubCoverHtml, self).__init__(uid=uid, file_name=file_name, title=title)
