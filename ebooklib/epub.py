@@ -86,9 +86,11 @@ IMAGE_MEDIA_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml']
 
 class Section(object):
 
-    def __init__(self, title, href=''):
+    def __init__(self, title, href='', start=None, end=None):
         self.title = title
         self.href = href
+        self.start = start
+        self.end = end
 
 
 class Link(object):
@@ -1181,8 +1183,23 @@ class EpubWriter(object):
         content_title = etree.SubElement(nav, 'h2')
         content_title.text = self.book.title
 
-        def _create_section(itm, items):
-            ol = etree.SubElement(itm, 'ol')
+        def _create_section(itm, items, gen_section_list=False, start_num=None):
+            if start_num is not None:
+                ol = etree.SubElement(itm, 'ol', start=str(start_num))
+            else:
+                ol = etree.SubElement(itm, 'ol')
+            if gen_section_list:
+                li = etree.SubElement(ol, 'li')
+                li.text = 'Sections'
+                olol = etree.SubElement(li, 'ol')
+                for idx, section in enumerate([item for item in items
+                                               if isinstance(item, tuple)
+                                               or isinstance(item, list)]):
+                    lili = etree.SubElement(olol, 'li')
+                    a = etree.SubElement(lili, 'a', {'href': '#section_{}'.format(idx)})
+                    a.text = section[0].title
+
+            section_idx = 0
             for item in items:
                 if isinstance(item, tuple) or isinstance(item, list):
                     li = etree.SubElement(ol, 'li')
@@ -1193,10 +1210,14 @@ class EpubWriter(object):
                     elif isinstance(item[0], Link):
                         a = etree.SubElement(li, 'a', {'href': os.path.relpath(item[0].href, nav_dir_name)})
                     else:
-                        a = etree.SubElement(li, 'span')
+                        if gen_section_list:
+                            a = etree.SubElement(li, 'a', {'id': 'section_{}'.format(section_idx)})
+                        else:
+                            a = etree.SubElement(li, 'span')
                     a.text = item[0].title
 
-                    _create_section(li, item[1])
+                    _create_section(li, item[1], start_num=item[0].start)
+                    section_idx += 1
 
                 elif isinstance(item, Link):
                     li = etree.SubElement(ol, 'li')
@@ -1207,7 +1228,8 @@ class EpubWriter(object):
                     a = etree.SubElement(li, 'a', {'href': os.path.relpath(item.file_name, nav_dir_name)})
                     a.text = item.title
 
-        _create_section(nav, self.book.toc)
+        section_only_toc = all([isinstance(i[0], Section) for i in self.book.toc])
+        _create_section(nav, self.book.toc, gen_section_list=section_only_toc)
 
         # LANDMARKS / GUIDE
         # - http://www.idpf.org/epub/30/spec/epub30-contentdocs.html#sec-xhtml-nav-def-types-landmarks
